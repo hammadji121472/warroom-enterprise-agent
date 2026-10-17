@@ -2,3 +2,4 @@ streamlit
 playwright
 google-genai
 reportlab
+playwright
