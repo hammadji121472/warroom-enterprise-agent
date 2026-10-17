@@ -15,7 +15,7 @@ st.set_page_config(page_title="Competitor War-Room Agent", page_icon="⚔️", l
 st.title("⚔️ Advanced Competitor War-Room Agent")
 st.subheader("Multi-Competitor Scraping, Gemini AI Intelligence & PDF Export")
 
-# Get API Key from Streamlit Secrets
+# Get API Key safely from Streamlit Secrets or Environment
 api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 
 # PDF Generator Function
@@ -71,7 +71,6 @@ def scrape_competitor(url):
             script.decompose()
             
         text = soup.get_text(separator=' ', strip=True)
-        # Limit text length for Gemini
         return f"URL: {url}\nTitle: {title}\nContent Snippet: {text[:4000]}"
     except Exception as e:
         return f"Error scraping {url}: {str(e)}"
@@ -85,7 +84,7 @@ urls_input = st.text_area(
 
 if st.button("Run War-Room Analysis", type="primary"):
     if not api_key:
-        st.error("GEMINI_API_KEY Streamlit Secrets mein nahi mili! Baraye meherbani Advanced Settings mein API Key add karein.")
+        st.error("GEMINI_API_KEY Streamlit Secrets mein nahi mili! Advanced Settings -> Secrets mein API Key add karein.")
     elif not urls_input.strip():
         st.warning("Baraye meherbani kam az kam ek URL daalain.")
     else:
