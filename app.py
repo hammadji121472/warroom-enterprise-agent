@@ -150,7 +150,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 input_col, btn_col = st.columns([3, 1])
 
 with input_col:
-    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.notion.so")
+    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.webfx.com")
 
 with btn_col:
     analyze_btn = st.button("🚀 Run Analysis")
@@ -235,34 +235,16 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Automatic Model Resolution logic
-                    report_output = None
-                    target_model = 'gemini-2.5-flash'
-                    
-                    try:
-                        res = client.models.generate_content(
-                            model=target_model,
-                            contents=prompt
-                        )
-                        report_output = res.text
-                    except Exception:
-                        # Fallback to listing models
-                        for m in client.models.list():
-                            if 'generateContent' in getattr(m, 'supported_generation_methods', []):
-                                m_name = m.name.replace('models/', '')
-                                try:
-                                    res = client.models.generate_content(
-                                        model=m_name,
-                                        contents=prompt
-                                    )
-                                    if res and res.text:
-                                        report_output = res.text
-                                        break
-                                except Exception:
-                                    continue
+                    # Direct call to official gemini-2.5-flash model
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                    )
+
+                    report_output = response.text
 
                     if not report_output:
-                        raise Exception("Failed to generate content with any available model.")
+                        raise Exception("Empty response returned from Gemini API.")
 
                     pdf_file = generate_pdf(report_output)
 
