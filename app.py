@@ -7,134 +7,162 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-import io
 
-# Page Config
-st.set_page_config(page_title="Competitor War-Room Agent", page_icon="⚔️", layout="wide")
-
-st.title("⚔️ Advanced Competitor War-Room Agent")
-st.subheader("Multi-Competitor Scraping, Gemini AI Intelligence & PDF Export")
-
-# Get API Key safely from Streamlit Secrets or Environment
-api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
-
-# PDF Generator Function
-def generate_pdf(analysis_text):
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
-    styles = getSampleStyleSheet()
-    
-    title_style = ParagraphStyle(
-        'TitleStyle',
-        parent=styles['Heading1'],
-        fontSize=20,
-        textColor=colors.HexColor("#1A365D"),
-        spaceAfter=15
-    )
-    body_style = ParagraphStyle(
-        'BodyStyle',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor("#2D3748"),
-        spaceAfter=8
-    )
-    
-    story = [Paragraph("Competitor Intelligence & War-Room Report", title_style), Spacer(1, 10)]
-    
-    for paragraph in analysis_text.split('\n'):
-        if paragraph.strip():
-            clean_p = paragraph.replace('*', '').strip()
-            story.append(Paragraph(clean_p, body_style))
-            
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
-
-# Scraper Function
-def scrape_competitor(url):
-    try:
-        if not url.startswith(('http://', 'https://')):
-            url = 'https://' + url
-            
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
-        response = requests.get(url, headers=headers, timeout=15)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Extract title and text
-        title = soup.title.string.strip() if soup.title and soup.title.string else url
-        
-        # Remove scripts and styles
-        for script in soup(["script", "style"]):
-            script.decompose()
-            
-        text = soup.get_text(separator=' ', strip=True)
-        return f"URL: {url}\nTitle: {title}\nContent Snippet: {text[:4000]}"
-    except Exception as e:
-        return f"Error scraping {url}: {str(e)}"
-
-# Input Area
-urls_input = st.text_area(
-    "Competitor Website URLs Enter Karein (Har line par ek URL dalein):",
-    value="https://books.toscrape.com/",
-    height=120
+# 1. Page Config
+st.set_page_config(
+    page_title="War-Room Agent | Enterprise AI Competitor Intelligence",
+    page_icon="⚔️",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-if st.button("Run War-Room Analysis", type="primary"):
-    if not api_key:
-        st.error("GEMINI_API_KEY Streamlit Secrets mein nahi mili! Advanced Settings -> Secrets mein API Key add karein.")
-    elif not urls_input.strip():
-        st.warning("Baraye meherbani kam az kam ek URL daalain.")
-    else:
-        urls = [u.strip() for u in urls_input.split('\n') if u.strip()]
-        
-        with st.spinner("Competitor websites scrape ki ja rahi hain..."):
-            scraped_results = []
-            for url in urls:
-                data = scrape_competitor(url)
-                scraped_results.append(data)
-                
-            combined_context = "\n\n--- COMPETITOR DATA ---\n\n".join(scraped_results)
+# 2. Custom CSS - Silicon Valley Dark Glassmorphism UI
+st.markdown("""
+    <style>
+    /* Main App Background */
+    .stApp {
+        background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #1f2937 100%);
+        color: #f3f4f6;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-        with st.spinner("Gemini AI se Strategic War-Room Analysis generate ho raha hai..."):
-            try:
-                client = genai.Client(api_key=api_key)
-                prompt = f"""
-                Aap ek Senior Business Intelligence Analyst aur Growth Strategist hain.
-                Neeche diye gaye competitor data ka deep strategic analysis karein:
-                
-                {combined_context}
-                
-                Mujhe ek detailed War-Room Report bana kar dein jisme yeh sections hoon:
-                1. Executive Summary & Value Proposition
-                2. Competitor Strengths & Product Offerings
-                3. Market Gaps & Weaknesses Identified
-                4. Strategic Counter-Attack Strategy & Monetization Recommendations
-                
-                Report ko clear, professional aur actionable format mein likhein.
-                """
-                
-                response = client.models.generate_content(
-                    model='gemini-3.8-flash',
-                    contents=prompt,
-                )
-                
-                analysis_result = response.text
-                
-                st.success("War-Room Analysis Complete!")
-                st.markdown("---")
-                st.markdown(analysis_result)
-                
-                # PDF Download Button
-                pdf_data = generate_pdf(analysis_result)
-                st.download_button(
-                    label="📄 Download Executive War-Room PDF Report",
-                    data=pdf_data,
-                    file_name="Competitor_WarRoom_Analysis.pdf",
-                    mime="application/pdf"
-                )
-                
-            except Exception as e:
-                st.error(f"Gemini AI Analysis mein error aaya: {str(e)}")
+    /* Hide Default Header/Footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Title Styling */
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        background: linear-gradient(90deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        margin-top: 1rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .hero-subtitle {
+        color: #9ca3af;
+        text-align: center;
+        font-size: 1.15rem;
+        font-weight: 400;
+        margin-bottom: 2.5rem;
+    }
+
+    /* Input Fields */
+    .stTextInput input {
+        background-color: rgba(17, 24, 39, 0.8) !important;
+        color: #f9fafb !important;
+        border-radius: 12px !important;
+        border: 1px solid #374151 !important;
+        padding: 14px 18px !important;
+        font-size: 1rem !important;
+    }
+    .stTextInput input:focus {
+        border-color: #818cf8 !important;
+        box-shadow: 0 0 15px rgba(129, 140, 248, 0.3) !important;
+    }
+
+    /* Primary Action Button */
+    div.stButton > button:first-child {
+        width: 100%;
+        background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 14px 24px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border: none;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+        transition: all 0.3s ease;
+        margin-top: 1.8rem;
+    }
+    div.stButton > button:first-child:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(124, 58, 237, 0.6);
+        background: linear-gradient(90deg, #4338ca 0%, #6d28d9 100%);
+    }
+
+    /* Feature Score Cards */
+    .card-box {
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        backdrop-filter: blur(12px);
+        margin-bottom: 1.5rem;
+    }
+    .card-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #60a5fa;
+    }
+    .card-label {
+        font-size: 0.9rem;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Output Box Styling */
+    .stTextArea textarea {
+        background-color: rgba(17, 24, 39, 0.9) !important;
+        color: #e5e7eb !important;
+        border-radius: 12px !important;
+        border: 1px solid #374151 !important;
+        font-family: 'Menlo', 'Monaco', monospace !important;
+        font-size: 0.95rem !important;
+        line-height: 1.6 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# 3. App Header
+st.markdown('<div class="hero-title">⚔️ COMPETITOR WAR-ROOM AGENT</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">Autonomous AI Intelligence & Strategic Counter-Attack Engine</div>', unsafe_allow_html=True)
+
+# 4. Metric Highlights Header
+col_a, col_b, col_c = st.columns(3)
+with col_a:
+    st.markdown('<div class="card-box"><div class="card-value">10s</div><div class="card-label">Analysis Speed</div></div>', unsafe_allow_html=True)
+with col_b:
+    st.markdown('<div class="card-box"><div class="card-value">Gemini 2.5</div><div class="card-label">AI Engine</div></div>', unsafe_allow_html=True)
+with col_c:
+    st.markdown('<div class="card-box"><div class="card-value">PDF Exec</div><div class="card-label">Export Ready</div></div>', unsafe_allow_html=True)
+
+st.markdown("---")
+
+# 5. Input Form Area
+input_col, btn_col = st.columns([3, 1])
+
+with input_col:
+    target_url = st.text_input("🎯 Enter Competitor Website URL", placeholder="https://competitor-domain.com")
+
+with btn_col:
+    analyze_btn = st.button("🚀 Analyze Competitor")
+
+# Scraping & Helper Functions
+def scrape_website(url):
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        res = requests.get(url, headers=headers, timeout=12)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        text = ' '.join([p.text for p in soup.find_all(['p', 'h1', 'h2', 'h3', 'li'])])
+        return text[:4500] if len(text) > 100 else "Scraped content is too brief."
+    except Exception as e:
+        return f"Scraping Error: {str(e)}"
+
+def generate_pdf(report_text, filename="Competitor_War_Room_Report.pdf"):
+    doc = SimpleDocTemplate(filename, pagesize=letter)
+    styles = getSampleStyleSheet()
+    story = []
+
+    title_style = ParagraphStyle(
+        'DocTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#1E2
