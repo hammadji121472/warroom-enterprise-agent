@@ -16,22 +16,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 2. Modern Enterprise Glassmorphism UI CSS
+# 2. Modern Enterprise UI CSS
 st.markdown("""
     <style>
-    /* Main Background - Clean Enterprise Slate */
     .stApp {
         background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
         color: #f8fafc;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-
-    /* Hide Unnecessary Streamlit Elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Top Badge */
     .status-badge {
         display: inline-block;
         background: rgba(59, 130, 246, 0.15);
@@ -45,7 +41,6 @@ st.markdown("""
         margin-bottom: 1rem;
     }
 
-    /* Header Title */
     .hero-title {
         font-size: 2.8rem;
         font-weight: 800;
@@ -63,7 +58,6 @@ st.markdown("""
         margin-bottom: 2.5rem;
     }
 
-    /* Feature Metric Cards */
     .card-box {
         background: rgba(30, 41, 59, 0.8);
         border: 1px solid #334155;
@@ -86,7 +80,6 @@ st.markdown("""
         margin-top: 4px;
     }
 
-    /* Input Field Styling */
     .stTextInput label {
         color: #e2e8f0 !important;
         font-weight: 600 !important;
@@ -105,7 +98,6 @@ st.markdown("""
         box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
     }
 
-    /* Action Button Styling */
     div.stButton > button:first-child {
         width: 100%;
         background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
@@ -125,7 +117,6 @@ st.markdown("""
         box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
     }
 
-    /* Text Area Styling */
     .stTextArea textarea {
         background-color: #0f172a !important;
         color: #f1f5f9 !important;
@@ -139,7 +130,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 3. App Header & Title
-st.markdown('<div style="text-align: center;"><span class="status-badge">⚡ ENTERPRISE AI AGENT V2.5</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: center;"><span class="status-badge">⚡ ENTERPRISE AI AGENT</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-title">Competitor War-Room Intelligence</div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-subtitle">Automated Web Extraction & Strategic Counter-Attack Engine</div>', unsafe_allow_html=True)
 
@@ -148,7 +139,7 @@ col_a, col_b, col_c = st.columns(3)
 with col_a:
     st.markdown('<div class="card-box"><div class="card-value">10s</div><div class="card-label">Analysis Speed</div></div>', unsafe_allow_html=True)
 with col_b:
-    st.markdown('<div class="card-box"><div class="card-value">Gemini 2.5</div><div class="card-label">AI Intelligence</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-box"><div class="card-value">Gemini AI</div><div class="card-label">Intelligence Engine</div></div>', unsafe_allow_html=True)
 with col_c:
     st.markdown('<div class="card-box"><div class="card-value">PDF Ready</div><div class="card-label">Executive Export</div></div>', unsafe_allow_html=True)
 
@@ -212,8 +203,13 @@ if analyze_btn:
     if not target_url:
         st.warning("⚠️ Please enter a valid URL first.")
     else:
+        # Clean URL format if user pasted markdown brackets
+        clean_url = target_url.strip()
+        if "[" in clean_url and "]" in clean_url:
+            clean_url = clean_url.split("]")[-1].replace("(", "").replace(")", "").strip()
+
         with st.spinner("⚡ Extracting Competitor Data & Generating Counter-Strategy..."):
-            scraped_data = scrape_website(target_url)
+            scraped_data = scrape_website(clean_url)
             api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
             
             if not api_key:
@@ -235,6 +231,7 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
+                    # Updated to standard supported model
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=prompt,
