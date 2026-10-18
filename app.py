@@ -130,7 +130,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. App Header
+# 3. Header
 st.markdown('<div style="text-align: center;"><span class="status-badge">⚡ ENTERPRISE AI AGENT</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-title">Competitor War-Room Intelligence</div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-subtitle">Automated Web Extraction & Strategic Counter-Attack Engine</div>', unsafe_allow_html=True)
@@ -157,7 +157,6 @@ with btn_col:
 
 # Helper Functions
 def clean_input_url(url_str):
-    # Extracts clean URL if markdown link is pasted
     match = re.search(r'https?://[^\s\)\]]+', url_str)
     if match:
         return match.group(0)
@@ -236,7 +235,7 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Exact current standard model
+                    # Using official updated model identifier
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=prompt,
