@@ -235,25 +235,34 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Smart Model Fallback Loop
-                    model_names = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
+                    # Automatic Model Resolution logic
                     report_output = None
-                    last_error = None
-
-                    for m in model_names:
-                        try:
-                            res = client.models.generate_content(
-                                model=m,
-                                contents=prompt
-                            )
-                            if res and res.text:
-                                report_output = res.text
-                                break
-                        except Exception as err_m:
-                            last_error = err_m
+                    target_model = 'gemini-2.5-flash'
+                    
+                    try:
+                        res = client.models.generate_content(
+                            model=target_model,
+                            contents=prompt
+                        )
+                        report_output = res.text
+                    except Exception:
+                        # Fallback to listing models
+                        for m in client.models.list():
+                            if 'generateContent' in getattr(m, 'supported_generation_methods', []):
+                                m_name = m.name.replace('models/', '')
+                                try:
+                                    res = client.models.generate_content(
+                                        model=m_name,
+                                        contents=prompt
+                                    )
+                                    if res and res.text:
+                                        report_output = res.text
+                                        break
+                                except Exception:
+                                    continue
 
                     if not report_output:
-                        raise Exception(f"All model attempts failed. Last error: {str(last_error)}")
+                        raise Exception("Failed to generate content with any available model.")
 
                     pdf_file = generate_pdf(report_output)
 
