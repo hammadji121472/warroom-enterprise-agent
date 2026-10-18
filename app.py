@@ -157,9 +157,10 @@ with btn_col:
 
 # Helper Functions
 def clean_input_url(url_str):
-    urls = re.findall(r'https?://[^\s\)\]]+', url_str)
-    if urls:
-        return urls[0]
+    # Extracts clean URL if markdown link is pasted
+    match = re.search(r'https?://[^\s\)\]]+', url_str)
+    if match:
+        return match.group(0)
     return url_str.strip()
 
 def scrape_website(url):
@@ -235,26 +236,13 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Dynamic Fallback Models Try Sequence
-                    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro']
-                    report_output = None
-                    last_err = None
+                    # Exact current standard model
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                    )
 
-                    for model_name in models_to_try:
-                        try:
-                            response = client.models.generate_content(
-                                model=model_name,
-                                contents=prompt,
-                            )
-                            report_output = response.text
-                            if report_output:
-                                break
-                        except Exception as m_err:
-                            last_err = m_err
-
-                    if not report_output:
-                        raise Exception(f"All models failed. Last error: {str(last_err)}")
-
+                    report_output = response.text
                     pdf_file = generate_pdf(report_output)
 
                     st.success("🎯 Intelligence Analysis Successfully Completed!")
