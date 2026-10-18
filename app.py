@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from google import genai
 import os
+import re
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -129,7 +130,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. App Header & Title
+# 3. App Header
 st.markdown('<div style="text-align: center;"><span class="status-badge">⚡ ENTERPRISE AI AGENT</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-title">Competitor War-Room Intelligence</div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-subtitle">Automated Web Extraction & Strategic Counter-Attack Engine</div>', unsafe_allow_html=True)
@@ -145,19 +146,25 @@ with col_c:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# 5. Inputs & Trigger
+# 5. Inputs
 input_col, btn_col = st.columns([3, 1])
 
 with input_col:
-    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://competitor-domain.com")
+    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.notion.so")
 
 with btn_col:
     analyze_btn = st.button("🚀 Run Analysis")
 
-# 6. Helper Functions
+# Helper Functions
+def clean_input_url(url_str):
+    urls = re.findall(r'https?://[^\s\)\]]+', url_str)
+    if urls:
+        return urls[0]
+    return url_str.strip()
+
 def scrape_website(url):
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         res = requests.get(url, headers=headers, timeout=12)
         soup = BeautifulSoup(res.text, 'html.parser')
         text = ' '.join([p.text for p in soup.find_all(['p', 'h1', 'h2', 'h3', 'li'])])
@@ -198,18 +205,15 @@ def generate_pdf(report_text, filename="Competitor_War_Room_Report.pdf"):
     doc.build(story)
     return filename
 
-# 7. AI Execution Logic
+# 6. Execution Logic
 if analyze_btn:
     if not target_url:
         st.warning("⚠️ Please enter a valid URL first.")
     else:
-        # Clean URL format if user pasted markdown brackets
-        clean_url = target_url.strip()
-        if "[" in clean_url and "]" in clean_url:
-            clean_url = clean_url.split("]")[-1].replace("(", "").replace(")", "").strip()
-
-        with st.spinner("⚡ Extracting Competitor Data & Generating Counter-Strategy..."):
-            scraped_data = scrape_website(clean_url)
+        valid_url = clean_input_url(target_url)
+        
+        with st.spinner(f"⚡ Extracting Data from {valid_url} & Generating Counter-Strategy..."):
+            scraped_data = scrape_website(valid_url)
             api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
             
             if not api_key:
@@ -231,7 +235,6 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Updated to standard supported model
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=prompt,
