@@ -235,12 +235,26 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    response = client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=prompt,
-                    )
+                    # Dynamic Fallback Models Try Sequence
+                    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro']
+                    report_output = None
+                    last_err = None
 
-                    report_output = response.text
+                    for model_name in models_to_try:
+                        try:
+                            response = client.models.generate_content(
+                                model=model_name,
+                                contents=prompt,
+                            )
+                            report_output = response.text
+                            if report_output:
+                                break
+                        except Exception as m_err:
+                            last_err = m_err
+
+                    if not report_output:
+                        raise Exception(f"All models failed. Last error: {str(last_err)}")
+
                     pdf_file = generate_pdf(report_output)
 
                     st.success("🎯 Intelligence Analysis Successfully Completed!")
