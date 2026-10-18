@@ -235,7 +235,7 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Using official updated model identifier
+                    # Correct updated model identifier
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=prompt,
