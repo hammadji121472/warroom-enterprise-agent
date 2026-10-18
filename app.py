@@ -150,7 +150,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 input_col, btn_col = st.columns([3, 1])
 
 with input_col:
-    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.webfx.com")
+    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.pentagram.com")
 
 with btn_col:
     analyze_btn = st.button("🚀 Run Analysis")
@@ -235,7 +235,7 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Explicit single model targeting standard endpoint
+                    # Official active model target
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=prompt,
