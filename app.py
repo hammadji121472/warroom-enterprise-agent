@@ -150,7 +150,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 input_col, btn_col = st.columns([3, 1])
 
 with input_col:
-    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.pentagram.com")
+    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.webfx.com")
 
 with btn_col:
     analyze_btn = st.button("🚀 Run Analysis")
@@ -235,26 +235,13 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Dynamic Fallback: Tries live working models in order
-                    models_to_test = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash']
-                    report_output = None
-                    last_err = None
+                    # Explicit single model targeting standard endpoint
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                    )
 
-                    for model_id in models_to_test:
-                        try:
-                            response = client.models.generate_content(
-                                model=model_id,
-                                contents=prompt,
-                            )
-                            if response and response.text:
-                                report_output = response.text
-                                break
-                        except Exception as e:
-                            last_err = e
-
-                    if not report_output:
-                        raise Exception(f"All model calls failed. Last details: {str(last_err)}")
-
+                    report_output = response.text
                     pdf_file = generate_pdf(report_output)
 
                     st.success("🎯 Intelligence Analysis Successfully Completed!")
