@@ -220,7 +220,6 @@ if analyze_btn:
                 st.error("❌ Gemini API Key missing in Streamlit secrets!")
             else:
                 try:
-                    # Initialize official SDK Client
                     client = genai.Client(api_key=api_key)
 
                     prompt = f"""
@@ -236,9 +235,9 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Using official current production model ID directly
+                    # Google API demanded model: gemini-3.8-flash
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-3.8-flash',
                         contents=prompt,
                     )
 
