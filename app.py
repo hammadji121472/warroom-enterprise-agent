@@ -150,7 +150,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 input_col, btn_col = st.columns([3, 1])
 
 with input_col:
-    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.pentagram.com")
+    target_url = st.text_input("🎯 Target Competitor Website URL", placeholder="https://www.webfx.com")
 
 with btn_col:
     analyze_btn = st.button("🚀 Run Analysis")
@@ -168,9 +168,9 @@ def scrape_website(url):
         res = requests.get(url, headers=headers, timeout=12)
         soup = BeautifulSoup(res.text, 'html.parser')
         text = ' '.join([p.text for p in soup.find_all(['p', 'h1', 'h2', 'h3', 'li'])])
-        return text[:4500] if len(text) > 100 else "Scraped content is too brief."
+        return text[:4500] if len(text) > 100 else "Scraped content is brief but functional."
     except Exception as e:
-        return f"Scraping Error: {str(e)}"
+        return f"Scraping Notice: {str(e)}"
 
 def generate_pdf(report_text, filename="Competitor_War_Room_Report.pdf"):
     doc = SimpleDocTemplate(filename, pagesize=letter)
@@ -235,13 +235,31 @@ if analyze_btn:
                     5. RECOMMENDED QUICK WINS (NEXT 30 DAYS)
                     """
 
-                    # Official active model target
-                    response = client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=prompt,
-                    )
+                    candidate_models = [
+                        'gemini-2.5-flash',
+                        'gemini-2.5-pro',
+                        'gemini-1.5-flash'
+                    ]
 
-                    report_output = response.text
+                    report_output = None
+                    last_exception = None
+
+                    for m_name in candidate_models:
+                        try:
+                            response = client.models.generate_content(
+                                model=m_name,
+                                contents=prompt,
+                            )
+                            if response and response.text:
+                                report_output = response.text
+                                break
+                        except Exception as m_err:
+                            last_exception = m_err
+                            continue
+
+                    if not report_output:
+                        raise Exception(f"API Connection issue: {str(last_exception)}")
+
                     pdf_file = generate_pdf(report_output)
 
                     st.success("🎯 Intelligence Analysis Successfully Completed!")
